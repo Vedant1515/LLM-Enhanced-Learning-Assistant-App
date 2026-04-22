@@ -1,0 +1,14 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <dimen name="margin_small">8dp</dimen>
+    <dimen name="margin_medium">16dp</dimen>
+    <dimen name="margin_large">24dp</dimen>
+    <dimen name="card_radius">16dp</dimen>
+    <dimen name="btn_radius">12dp</dimen>
+    <dimen name="tag_radius">20dp</dimen>
+    <dimen name="text_title">26sp</dimen>
+    <dimen name="text_heading">20sp</dimen>
+    <dimen name="text_body">15sp</dimen>
+    <dimen name="text_small">13sp</dimen>
+    <dimen name="text_tiny">11sp</dimen>
+</resources>
