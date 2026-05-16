@@ -1,4 +1,3 @@
-# Teaching 305 708 Flask API
 
 This Flask API leverages the GradientAI service with the Llama model to generate educational quizzes on various topics.
 
