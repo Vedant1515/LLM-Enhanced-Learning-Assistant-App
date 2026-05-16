@@ -65,4 +65,21 @@
         <item name="android:textSize">13sp</item>
     </style>
 
+    <style name="BottomSheetTheme" parent="Theme.MaterialComponents.BottomSheetDialog">
+        <item name="bottomSheetStyle">@style/LearnAI.BottomSheet</item>
+    </style>
+
+    <style name="LearnAI.BottomSheet" parent="Widget.MaterialComponents.BottomSheet.Modal">
+        <item name="android:background">@color/colorCard</item>
+        <item name="shapeAppearance">@style/LearnAI.BottomSheetShape</item>
+    </style>
+
+    <style name="LearnAI.BottomSheetShape" parent="ShapeAppearance.MaterialComponents.LargeComponent">
+        <item name="cornerFamily">rounded</item>
+        <item name="cornerSizeTopLeft">20dp</item>
+        <item name="cornerSizeTopRight">20dp</item>
+        <item name="cornerSizeBottomLeft">0dp</item>
+        <item name="cornerSizeBottomRight">0dp</item>
+    </style>
+
 </resources>

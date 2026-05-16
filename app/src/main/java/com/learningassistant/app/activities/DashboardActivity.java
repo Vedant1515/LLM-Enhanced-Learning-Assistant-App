@@ -2,6 +2,7 @@ package com.learningassistant.app.activities;
 
 import android.content.Intent;
 import android.os.Bundle;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
@@ -9,6 +10,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
+import com.google.android.material.bottomnavigation.BottomNavigationView;
 import com.learningassistant.app.R;
 import com.learningassistant.app.adapters.TaskAdapter;
 import com.learningassistant.app.models.Task;
@@ -22,7 +24,8 @@ public class DashboardActivity extends AppCompatActivity {
 
     private TextView tvGreeting, tvTasksDue;
     private RecyclerView rvTasks;
-    private Button btnLogout;
+    private Button btnLogout, btnUpgrade;
+    private BottomNavigationView bottomNav;
     private SessionManager sessionManager;
     private TaskAdapter taskAdapter;
     private final List<Task> tasks = new ArrayList<>();
@@ -42,6 +45,8 @@ public class DashboardActivity extends AppCompatActivity {
         tvTasksDue = findViewById(R.id.tvTasksDue);
         rvTasks = findViewById(R.id.rvTasks);
         btnLogout = findViewById(R.id.btnLogout);
+        btnUpgrade = findViewById(R.id.btnUpgrade);
+        bottomNav = findViewById(R.id.bottomNav);
 
         rvTasks.setLayoutManager(new LinearLayoutManager(this));
         taskAdapter = new TaskAdapter(tasks);
@@ -57,6 +62,28 @@ public class DashboardActivity extends AppCompatActivity {
         });
 
         btnLogout.setOnClickListener(v -> confirmLogout());
+
+        btnUpgrade.setOnClickListener(v -> {
+            startActivity(new Intent(DashboardActivity.this, UpgradeActivity.class));
+            AnimationUtils.slideInRight(this);
+        });
+
+        bottomNav.setSelectedItemId(R.id.nav_home);
+        bottomNav.setOnItemSelectedListener(item -> {
+            int id = item.getItemId();
+            if (id == R.id.nav_history) {
+                startActivity(new Intent(DashboardActivity.this, HistoryActivity.class));
+                AnimationUtils.slideInRight(this);
+                bottomNav.setSelectedItemId(R.id.nav_home);
+                return true;
+            } else if (id == R.id.nav_profile) {
+                startActivity(new Intent(DashboardActivity.this, ProfileActivity.class));
+                AnimationUtils.slideInRight(this);
+                bottomNav.setSelectedItemId(R.id.nav_home);
+                return true;
+            }
+            return true;
+        });
     }
 
     private void loadDashboard() {
@@ -85,7 +112,6 @@ public class DashboardActivity extends AppCompatActivity {
         taskAdapter.notifyDataSetChanged();
         tvTasksDue.setText(String.format("You have %d tasks due", tasks.size()));
 
-        // Stagger-animate the RecyclerView items
         rvTasks.post(() -> {
             List<View> views = new ArrayList<>();
             LinearLayoutManager lm = (LinearLayoutManager) rvTasks.getLayoutManager();
@@ -113,8 +139,6 @@ public class DashboardActivity extends AppCompatActivity {
     private void doLogout() {
         sessionManager.logout();
         Intent intent = new Intent(DashboardActivity.this, LoginActivity.class);
-        // Clear the entire back stack so pressing Back on LoginActivity exits the app,
-        // not returns to Dashboard
         intent.setFlags(Intent.FLAG_ACTIVITY_NEW_TASK | Intent.FLAG_ACTIVITY_CLEAR_TASK);
         startActivity(intent);
         overridePendingTransition(R.anim.slide_in_left, R.anim.slide_out_right);

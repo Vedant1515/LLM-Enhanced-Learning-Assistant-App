@@ -13,11 +13,19 @@ import com.learningassistant.app.R;
 import com.learningassistant.app.adapters.ResultsAdapter;
 import com.learningassistant.app.adapters.StudyPlanAdapter;
 import com.learningassistant.app.models.QuizQuestion;
+import com.learningassistant.app.models.QuizResult;
 import com.learningassistant.app.models.StudyDay;
+import com.learningassistant.app.network.ApiClient;
+import com.learningassistant.app.network.ApiResponse;
+import com.learningassistant.app.network.SaveQuizResultRequest;
 import com.learningassistant.app.utils.AnimationUtils;
+import com.learningassistant.app.utils.SessionManager;
 import java.lang.reflect.Type;
 import java.util.ArrayList;
 import java.util.List;
+import retrofit2.Call;
+import retrofit2.Callback;
+import retrofit2.Response;
 
 public class ResultsActivity extends AppCompatActivity {
 
@@ -26,14 +34,19 @@ public class ResultsActivity extends AppCompatActivity {
     private Button btnContinue;
     private List<QuizQuestion> questions = new ArrayList<>();
     private String taskTopic;
+    private String taskTitle;
+    private SessionManager sessionManager;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_results);
 
+        sessionManager = new SessionManager(this);
         taskTopic = getIntent().getStringExtra("task_topic");
         if (taskTopic == null) taskTopic = "General";
+        taskTitle = getIntent().getStringExtra("task_title");
+        if (taskTitle == null) taskTitle = taskTopic;
 
         String questionsJson = getIntent().getStringExtra("questions_json");
         if (questionsJson != null) {
@@ -49,11 +62,11 @@ public class ResultsActivity extends AppCompatActivity {
     }
 
     private void initViews() {
-        tvScore = findViewById(R.id.tvScore);
+        tvScore           = findViewById(R.id.tvScore);
         tvStudyPlanPrompt = findViewById(R.id.tvStudyPlanPrompt);
-        rvResults = findViewById(R.id.rvResults);
-        rvStudyPlan = findViewById(R.id.rvStudyPlan);
-        btnContinue = findViewById(R.id.btnContinue);
+        rvResults         = findViewById(R.id.rvResults);
+        rvStudyPlan       = findViewById(R.id.rvStudyPlan);
+        btnContinue       = findViewById(R.id.btnContinue);
 
         rvResults.setLayoutManager(new LinearLayoutManager(this));
         rvResults.setNestedScrollingEnabled(false);
@@ -78,8 +91,40 @@ public class ResultsActivity extends AppCompatActivity {
         }
         tvScore.setText(score + " / " + questions.size());
 
+        QuizResult result = new QuizResult(taskTopic, taskTitle, questions, score);
+        sessionManager.saveQuizResult(result);
+        sessionManager.saveTotalStats(questions.size(), score, questions.size() - score);
+
+        syncQuizResultToBackend(result);
+
         ResultsAdapter adapter = new ResultsAdapter(questions, taskTopic);
         rvResults.setAdapter(adapter);
+    }
+
+    private void syncQuizResultToBackend(QuizResult result) {
+        String username = sessionManager.getUsername();
+        if (username == null || username.isEmpty()) return;
+
+        SaveQuizResultRequest req = new SaveQuizResultRequest(
+                username,
+                result.getTopic(),
+                result.getTaskTitle(),
+                result.getQuestions(),
+                result.getCorrectCount(),
+                result.getTimestamp()
+        );
+
+        ApiClient.getService().saveQuizResult(req).enqueue(new Callback<ApiResponse>() {
+            @Override
+            public void onResponse(Call<ApiResponse> call, Response<ApiResponse> response) {
+                // Synced to MongoDB Atlas
+            }
+
+            @Override
+            public void onFailure(Call<ApiResponse> call, Throwable t) {
+                // Backend offline — result is already saved locally via SessionManager
+            }
+        });
     }
 
     private void displayStudyPlan() {
